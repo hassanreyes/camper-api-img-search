@@ -10,7 +10,8 @@ var mongodb = require('mongodb').MongoClient,
     
 var API_KEY = "AIzaSyAsZ_ozCZLd6J_dq8DvKifCniTKRhqEZic",
     CX = "010337252347492493134:9stuhnd3lsw";
-    
+
+/* Search for images */
 app.get('/api/search', (req, res) => {
     
     if(req.query !== undefined && req.query.t !== undefined){
@@ -61,6 +62,7 @@ app.get('/api/search', (req, res) => {
     
 });
 
+/* Last 10 queries */
 app.get('/api/latest', (req, res) => {
     //query last 10 requested terms 
     mongodb.connect(dbUrl, (err, db) => {
@@ -68,18 +70,26 @@ app.get('/api/latest', (req, res) => {
         console.log("Connected to " + dbUrl);
         //save in log
         var queries = db.collection('queries');
-        queries.find({}).sort({ ts : -1 }).limit(10).toArray((items) => {
-            res.json(items);
+        queries.find({}).sort({ ts : -1 }).limit(10).toArray((err, items) => {
+            if(err) { console.error(err); return res.json({error : err.message}); }
+            var result = [];
+            if(items.length > 0){
+                result = items.map((item) => {
+                    return { term : item.term, date : item.ts };
+                });
+            }
+            res.json(result);
             db.close(); 
         });
     });
 });
 
+/* Home Page */
 app.get('/', (req, res) => {
     var url = req.protocol + "://" + req.hostname + "/api/";
     var html = "<h2>Image Search Abstraction Layer</h2>"
             +   "<p>Perform a search with as the following example:</p>"
-            +   "<code>" + url + "search?t=<MY TERM>&offset=<MY PAGE></code>"
+            +   "<code>" + url + "search?t=&lt;MY TERM&gt;&offset=&lt;MY PAGE&gt;</code>"
             +   "<p>To get last 10 queries:</p>"
             +   "<code>" + url + "latest</code>";
     res.send(html);

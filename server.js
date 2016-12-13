@@ -74,6 +74,16 @@ app.get('/api/latest', (req, res) => {
         });
     });
 });
+
+app.get('/', (req, res) => {
+    var url = req.protocol + "://" + req.hostname + "/api/";
+    var html = "<h2>Image Search Abstraction Layer</h2>"
+            +   "<p>Perform a search with as the following example:</p>"
+            +   "<code>" + url + "search?t=<MY TERM>&offset=<MY PAGE></code>"
+            +   "<p>To get last 10 queries:</p>"
+            +   "<code>" + url + "latest</code>";
+    res.send(html);
+});
     
 app.listen(port, function () {
   console.log('Example app listening on port ' + port);
